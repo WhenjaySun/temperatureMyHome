@@ -28,8 +28,8 @@ async function fetchTemperatureData() {
         temperatureData.datasets[2].data.push({ x: timestamp, y: data.openwrt_temp_0 });
         temperatureData.datasets[3].data.push({ x: timestamp, y: data.openwrt_temp_6 });
 
-        // Keep only the last 100 data points to avoid memory overflow
-        if (temperatureData.labels.length > 100) {
+        // Keep only the last 10000 data points to avoid memory overflow
+        if (temperatureData.labels.length > 10000) {
             temperatureData.labels.shift();
             temperatureData.datasets.forEach(dataset => dataset.data.shift());
         }
