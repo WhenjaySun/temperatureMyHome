@@ -16,10 +16,29 @@ let temperatureData = {
     ]
 };
 
+async function fetchWithRetry(url, options = {}, retries = 10, delay = 5000) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            if (attempt < retries) {
+                console.error(`Fetch attempt ${attempt} failed. Retrying in ${delay / 1000} seconds...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            } else {
+                console.error(`Fetch attempt ${attempt} failed. No more retries left.`);
+                throw error;
+            }
+        }
+    }
+}
+
 async function fetchTemperatureData() {
     try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
+        const data = await fetchWithRetry(API_URL);
         const timestamp = new Date();
 
         temperatureData.labels.push(timestamp);
@@ -28,8 +47,8 @@ async function fetchTemperatureData() {
         temperatureData.datasets[2].data.push({ x: timestamp, y: data.openwrt_temp_0 });
         temperatureData.datasets[3].data.push({ x: timestamp, y: data.openwrt_temp_6 });
 
-        // Keep only the last 10000 data points to avoid memory overflow
-        if (temperatureData.labels.length > 10000) {
+        // Keep only the last 100 data points to avoid memory overflow
+        if (temperatureData.labels.length > 100) {
             temperatureData.labels.shift();
             temperatureData.datasets.forEach(dataset => dataset.data.shift());
         }
