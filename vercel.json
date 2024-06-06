@@ -16,7 +16,7 @@
       "dest": "/public/index.html"
     },
     {
-      "src": "/api/temperature-data",
+      "src": "/api/device-data",
       "dest": "/server.js"
     }
   ]

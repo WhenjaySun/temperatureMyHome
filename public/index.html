@@ -1,79 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Temperature Data</title>
+    <title>Device Data</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 </head>
+
 <body>
-    <h1>Real-time Temperature Data</h1>
+    <h1>Real-time Device Data</h1>
+    <h2>Temperature Data</h2>
+    <div>
+        <label for="dataPoints">Select data points:</label>
+        <select id="dataPoints">
+            <option value="60">Last hour</option>
+            <option value="120">Last 2 hour</option>
+            <option value="180">Last 3 hour</option>
+            <option value="360">Last 6 hour</option>
+            <option value="720">Last 12 hour</option>
+            <option value="1440">Last day</option>
+            <option value="2880">Last 2 day</option>
+        </select>
+    </div>
     <canvas id="temperatureChart" width="400" height="200"></canvas>
+    <h2>Memory Data</h2>
+    <canvas id="memoryChart" width="400" height="200"></canvas>
     <script>
-        const ctx = document.getElementById('temperatureChart').getContext('2d');
-        const temperatureChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [
-                    {
-                        label: 'Armbian Temp 0',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1,
-                        fill: false,
-                        data: []
-                    },
-                    {
-                        label: 'Armbian Temp 1',
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        borderWidth: 1,
-                        fill: false,
-                        data: []
-                    },
-                    {
-                        label: 'OpenWrt Temp 0',
-                        borderColor: 'rgba(255, 159, 64, 1)',
-                        borderWidth: 1,
-                        fill: false,
-                        data: []
-                    },
-                    {
-                        label: 'OpenWrt Temp 6',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1,
-                        fill: false,
-                        data: []
-                    }
-                ]
-            },
-            options: {
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: {
-                            unit: 'minute'
+        const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
+        const memoryCtx = document.getElementById('memoryChart').getContext('2d');
+
+        const temperatureChart = createChart(temperatureCtx);
+        const memoryChart = createChart(memoryCtx);
+
+        const dataPointsSelect = document.getElementById('dataPoints');
+
+        function createChart(ctx) {
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'zn-m2',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1,
+                            fill: false,
+                            data: []
+                        },
+                        {
+                            label: 'raspberry',
+                            borderColor: 'rgba(153, 102, 255, 1)',
+                            borderWidth: 1,
+                            fill: false,
+                            data: []
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'minute'
+                            }
                         }
                     }
                 }
-            }
-        });
-
-        async function fetchTemperatureData() {
-            const response = await fetch('/api/temperature-data');
-            const data = await response.json();
-
-            temperatureChart.data.labels = data.labels.map(label => new Date(label));
-            temperatureChart.data.datasets[0].data = data.datasets[0].data;
-            temperatureChart.data.datasets[1].data = data.datasets[1].data;
-            temperatureChart.data.datasets[2].data = data.datasets[2].data;
-            temperatureChart.data.datasets[3].data = data.datasets[3].data;
-
-            temperatureChart.update();
+            });
         }
 
-        setInterval(fetchTemperatureData, 60000); // Fetch data every minute
-        fetchTemperatureData(); // Initial fetch
+        async function fetchData(dataPoints) {
+            const response = await fetch(`/api/device-data?dataPoints=${dataPoints}`);
+            const data = await response.json();
+
+            // Reset labels and data
+            temperatureChart.data.labels = [];
+            memoryChart.data.labels = [];
+            temperatureChart.data.datasets.forEach(dataset => dataset.data = []);
+            memoryChart.data.datasets.forEach(dataset => dataset.data = []);
+
+            // Process data
+            data.forEach(device => {
+                const deviceName = device.deviceName;
+                const recordedType = device.recordedType;
+                const deviceData = device.deviceInnerDataVOList;
+
+                let chart, datasetIndex;
+                switch (recordedType) {
+                    case 'TEMPERATURE':
+                        chart = temperatureChart;
+                        datasetIndex = deviceName === 'zn-m2' ? 0 : 1;
+                        break;
+                    case 'MEMORY':
+                        chart = memoryChart;
+                        datasetIndex = deviceName === 'zn-m2' ? 0 : 1;
+                        break;
+                    default:
+                        return; // Skip unknown recorded type
+                }
+
+                deviceData.forEach(record => {
+                    const recordedDate = new Date(record.recordedDate);
+                    const recordedData = record.recordedData;
+
+                    // Add to labels if not already included
+                    if (!chart.data.labels.includes(recordedDate)) {
+                        chart.data.labels.push(recordedDate);
+                    }
+
+                    // Add to data
+                    chart.data.datasets[datasetIndex].data.push(recordedData);
+                });
+
+                chart.update();
+            });
+        }
+
+        setInterval(() => fetchData(dataPointsSelect.value), 60000);
+        fetchData(dataPointsSelect.value);
+        dataPointsSelect.addEventListener('change', () => {
+            fetchData(dataPointsSelect.value);
+        });
     </script>
 </body>
+
 </html>
