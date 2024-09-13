@@ -1,26 +1,26 @@
 ---
-- name: install
+- name: Q3_1
   hosts: dev,test,prod
   tasks:
-    - name: install packages
+    - name: p1
       ansible.builtin.yum:
-        name: "{{ packages }}"
+        name:
+          - php
+          - mariadb
         state: present
-        vars:
-          packages:
-            - php
-            - mariadb
-- name: install2
+
+- name: Q3_2
   hosts: dev
   tasks:
-    - name: install group
+    - name: p2
       ansible.builtin.yum:
         name: "@RPM Development Tools"
         state: present
-- name: install3
+
+- name: Q3_3
   hosts: dev
   tasks:
-    - name: upgrade
+    - name: p3
       ansible.builtin.yum:
-        name: '*'
+        name: "*"
         state: latest
