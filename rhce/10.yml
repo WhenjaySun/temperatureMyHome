@@ -1,0 +1,9 @@
+---
+- name: Q10
+  hosts: dev
+  tasks:
+    - name: p1
+      template:
+        src: /home/greg/ansible/hosts.j2
+        dest: /etc/myhosts
+      when: inventory_hostname in groups.dev

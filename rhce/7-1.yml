@@ -1,0 +1,5 @@
+---
+- name: Q7
+  hosts: webservers
+  roles:
+    - apache
