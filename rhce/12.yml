@@ -1,0 +1,24 @@
+---
+- name: Q12
+  hosts: dev
+  roles:
+    - apache
+  tasks:
+    - name: p1
+      ansible.builtin.file:
+        path: /webdev
+        state: directory
+        group: webdev
+        mode: 2775
+
+    - name: p2
+      ansible.builtin.file:
+        src: /webdev
+        state: link
+        path: /var/www/html/webdev
+
+    - name: p3
+      ansible.builtin.copy:
+        content: 'Development'
+        dest: /webdev/index.html
+        setype: httpd_sys_content_t

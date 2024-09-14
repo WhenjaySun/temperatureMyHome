@@ -2,36 +2,34 @@
 - name: Q9
   hosts: all
   tasks:
-    - block:
-      - name: create lv
-        community.general.lvol:
-          vg: research
-          lv: data
-          size: 1500
+    - name: shell register
+      shell: "vgdisplay research"
+      register: aa
+      ignore_errors: yes
 
-      - name: ext4 format
-        community.general.filesystem:
-          fstype: ext4
-          dev: /dev/research/data
+    - name: judge1
+      debug:
+        msg: Volume group done not exist
+      when: aa.rc != 0
 
-      rescue:
-        - name: error
-          ansible.builtin.debug:
-            msg: "Could not create logical volume of that size"
-
-        - name: create 800m
+    - name: main11
+      block:
+        - name: create 1500
           community.general.lvol:
             vg: research
             lv: data
-            size: 800
+            size: 1500
+      rescue:
+        - name: err msg
+          debug:
+            msg: Could not create logical volume of that size
+        - name: create 800                                  
+          community.general.lvol:                            
+            vg: research                                     
+            lv: data                                         
+            size: 800   
 
-        - name: ext4 format
-          community.general.filesystem:
-            fstype: ext4
-            dev: /dev/research/data
-          when: ansible_lvm.vgs.research is defined
-
-    - name: Check if volume group exists
-      ansible.builtin.debug:
-        msg: "Volume group does not exist"
-      when: ansible_lvm.vgs.research is not defined
+    - name: format
+      community.general.filesystem:
+        dev: /dev/research/data
+        fstype: ext4
