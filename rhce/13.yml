@@ -1,0 +1,38 @@
+---
+- name: Q13
+  hosts: all
+  tasks:
+    - name: down
+      ansible.builtin.get_url:
+        url: http://classroom/materials/hwreport.empty
+        dest: /root/hwreport.txt
+
+    - name: replace
+      ansible.builtin.lineinfile:
+        path: /root/hwreport.txt
+        regexp: '^HOST='
+        line: 'HOST={{ ansible_hostname }}'
+
+    - name: replace2
+      ansible.builtin.lineinfile:
+        path: /root/hwreport.txt
+        regexp: '^MEMORY='
+        line: 'MEMORY={{ ansible_memtotal_mb }}'
+
+    - name: replace3
+      ansible.builtin.lineinfile:
+        path: /root/hwreport.txt
+        regexp: '^BIOS='
+        line: 'BIOS={{ ansible_bios_version }}'
+
+    - name: replace4
+      ansible.builtin.lineinfile:
+        path: /root/hwreport.txt
+        regexp: '^DISK_SIZE_VDA='
+        line: 'DISK_SIZE_VDA={{ ansible_devices.vda.size }}'
+
+    - name: replace5
+      ansible.builtin.lineinfile:
+        path: /root/hwreport.txt
+        regexp: '^DISK_SIZE_VDB='
+        line: 'DISK_SIZE_VDB={{ ansible_devices.vdb.size | default("NONE", true) }}'

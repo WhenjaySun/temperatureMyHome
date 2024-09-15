@@ -1,0 +1,40 @@
+---
+- name: Q15
+  hosts: dev,test
+  vars_files:
+    - /home/greg/ansible/user_list.yml
+    - /home/greg/ansible/locker.yml
+  tasks:
+    - name: p1
+      ansible.builtin.group:
+        name: devops
+        state: present
+    
+    - name: p2
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        password_expire_min: "{{ item.password_expire_max }}"
+        password: "{{ pw_developer | password_hash('sha512') }}"
+        groups: devops
+      loop: "{{ users }}"
+      when: item.job == 'developer'
+
+- name: Q15_2
+  hosts: prod
+  vars_files:
+    - /home/greg/ansible/user_list.yml
+    - /home/greg/ansible/locker.yml
+  tasks:
+    - name: p3
+      ansible.builtin.group:
+        name: opsmgr
+        state: present
+
+    - name: p4  
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        password_expire_min: "{{ item.password_expire_max }}"
+        password: "{{ pw_manager | password_hash('sha512') }}"
+        groups: opsmgr
+      loop: "{{ users }}"
+      when: item.job == 'manager'

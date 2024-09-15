@@ -1,0 +1,10 @@
+---
+- name: Q17
+  hosts: test
+  tasks:
+    - name: p1
+      ansible.builtin.cron:
+        name: "check dirs"
+        minute: "*/2"
+        user: natasha
+        job: 'logger "EX200 in progress"'

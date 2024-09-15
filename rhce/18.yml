@@ -1,0 +1,9 @@
+---
+- name: Q18
+  hosts: all
+  vars:
+    timesync_ntp_servers:
+      - hostname: classroom.lab.example.com
+        ibrust: yes
+  roles:
+    - timesync
