@@ -3,19 +3,25 @@
   hosts: dev
   roles:
     - apache
-  tasks:
+  tasks: 
+    - name: p0     
+      ansible.builtin.group:
+        name: webdev
+        state: present
+
     - name: p1
       ansible.builtin.file:
         path: /webdev
-        state: directory
+        mode: '2775'
         group: webdev
-        mode: 2775
+        state: directory
+        setype: httpd_sys_content_t
 
     - name: p2
       ansible.builtin.file:
+        dest: /var/www/html/webdev
         src: /webdev
         state: link
-        path: /var/www/html/webdev
 
     - name: p3
       ansible.builtin.copy:
