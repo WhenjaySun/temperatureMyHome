@@ -1,6 +1,6 @@
 ---
 - name: Q10
-  hosts: dev
+  hosts: all
   tasks:
     - name: p1
       template:
