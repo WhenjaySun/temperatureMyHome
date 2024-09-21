@@ -1,0 +1,46 @@
+---
+- name: Q9-2
+  hosts: prod
+  tasks:
+    - name: shell1
+      shell: "ls /dev/vdb"
+      register: aa
+      ignore_errors: yes
+
+    - name: judge
+      fail:
+        msg: "disk does not exist"
+      when: aa.rc != 0
+
+    - name: begindisk
+      block:
+        - name: suc
+          community.general.parted:
+            device: /dev/vdb
+            number: 1
+            state: present
+            part_end: 1500KiB
+            fs_type: ext4
+
+      rescue:
+        - name: fa
+          fail:
+            msg: "could not create partation of that size"
+        - name: fai
+          community.general.parted:
+            device: /dev/vdb
+            number: 1
+            state: present
+            part_end: 800KiB
+            fs_type: ext4
+
+    - name: Format the partition
+      ansible.builtin.command: 
+        mkfs.ext4 /dev/vdb1
+
+    - name: end
+      ansible.posix.mount:
+        path: /newpart
+        src: /dev/vdb1
+        fstype: ext4   
+        state: mounted
