@@ -11,7 +11,7 @@
       ansible.builtin.lineinfile:
         path: /root/hwreport.txt
         regexp: '^HOST='
-        line: HOST={{ansible_hostname}}
+        line: HOST={{inventory_hostname}}
 
     - name: p3                           
       ansible.builtin.lineinfile:        
