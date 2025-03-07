@@ -4,8 +4,10 @@ This is a project I made. It can monitor the device's memory and temperature.
 
 ## Installation
 
-You need to install mysql and  have a linux server first. For me, I install them all in Raspberry Pi 5 (4GB). To see my environment: https://temperature.huspace.cn/
+Need to run this frontend on vercel.
 
 ## Backend
-https://github.com/WhenjaySun/TEMP
+Need to install mysql and  have a linux server first. For me, I install them all in Raspberry Pi 5 (4GB). Backend code: https://github.com/WhenjaySun/TEMP
 
+## Demo
+To see my environment: https://temperature.huspace.cn/
